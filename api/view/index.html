@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leave Portal</title>
+</head>
+<body>
+    <h1>Enter leave credentials </h1>
+    <hr>
+    <form id="create-form">
+       <span> Name: </span> <input type="text" id="name" size="30"> <br/> <br/>
+       <span> EmployeeID: </span> <input type="text" id="empId" size="3"> <br/> <br/>
+       <span> Leave Type: </span> <select id="leaveType" name="leaveType">
+        <option value="medical">Medical</option>
+        <option value="emergency">Emergency</option>
+        <option value="paternal">Paternal</option>
+        <option value="personal">Personal</option>
+        <option value="disability">Temporary Disability</option>
+        <option value="maternity">Maternity</option>
+       </select> <br/> <br/>
+       <span> From Date: </span> <input type="date" id="fromDate"> <br/> <br/>
+       <span>To Date: </span> <input type="date" id="toDate"> <br/> <br/>
+       <span> Number of days: </span> <span id="paidLeave"> </span> <br/> <br/>
+        <input type="submit" value="Submit"> 
+    </form>
+    <hr><br/><br/>
+    <table>
+         <tbody></tbody>
+    </table>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        //Use Ajax POST to prevent page reloads
+        $(function() {
+            $('#create-form').on('submit', function(event) {
+                event.preventDefault();
+                var nameInput = $('#name');
+                var empId = $('#empId');
+                var leaveType = $('#leaveType');
+                var paidLeave = $('#paidLeave');
+                var fromDate = $('#fromDate');
+                var toDate = $('#toDate');
+
+                var date1 = new Date($("#fromDate").val());
+                var date2 = new Date($("#toDate").val());
+                var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+                var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+                document.getElementById('paidLeave').innerHTML = diffDays;
+
+                $.ajax({
+                    url: '/api/admin',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 
+                        name: nameInput.val(),
+                        empId: empId.val(),
+                        leaveType: leaveType.val(),
+                        paidLeave: diffDays,
+                        fromDate: fromDate.val(),
+                        toDate: toDate.val()
+                    }),
+                    success: function(response) {
+                        console.log("Success");
+                        var body = $('tbody');
+                        body.html('');
+                        
+                        body.append('\
+                            <span> Leave submitted. You have </span>' + response.leave + '\
+                            <span> unpaid leaves </span>\
+                        ');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
